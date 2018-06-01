@@ -1,0 +1,24 @@
+{
+	"name": "node-statemachine",
+	"version": "0.1.0",
+	"private": true,
+	"main": "dist/index.js",
+	"scripts": {
+		"watch": "noderize-scripts watch",
+		"build": "noderize-scripts build",
+		"start": "noderize-scripts start",
+		"format": "noderize-scripts format",
+		"test": "noderize-scripts test",
+		"lint": "noderize-scripts lint",
+		"clean": "noderize-scripts clean"
+	},
+	"noderize": {
+		"languages": "typescript"
+	},
+	"devDependencies": {
+		"@noderize/scripts": "^0.7.0"
+	},
+	"dependencies": {
+		"@noderize/runtime": "^0.7.0"
+	}
+}
