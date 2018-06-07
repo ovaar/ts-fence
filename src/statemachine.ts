@@ -93,7 +93,7 @@ class StateMachine {
     this.stateName = stateName;
 
     const state = this.getState();
-    for (var { name, action } of state.events) {
+    for (const { name, action } of state.events) {
       this.__proto__[name] = action.method.bind(this);
     }    
   }
