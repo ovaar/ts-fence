@@ -1,78 +1,103 @@
 'use strict';
 
-export class StateMachine {
-  public STATE : Symbol = Symbol("state");
-  public STATES : Symbol = Symbol("states");
-  public STARTING_STATE : Symbol = Symbol("starting-state");
-  public machine : object = {};
+interface IStateNode {
+  name : string;
+}
 
-  constructor() {
-    
-  }
+class StateAction {
+  constructor(public method: Function) {}
+}
 
-  protected setDescription(description: object) {
-    const RESERVED: Symbol[] = [this.STARTING_STATE, this.STATES];
-
-    // Handle all the initial states and/or methods
-    const propertiesAndMethods = Object.keys(description).filter(property => !RESERVED.includes(property));
-    for (const property of propertiesAndMethods) {
-      this.machine[property] = description[property];
-    }
-
-    // now its states
-    this.machine[this.STATES] = description[this.STATES];
-
-    // what event handlers does it have?
-    const eventNames = Object.entries(description[this.STATES]).reduce(
-      (eventNames, [state, stateDescription]) => {
-        const eventNamesForThisState = Object.keys(stateDescription);
-
-        for (const eventName of eventNamesForThisState) {
-          eventNames.add(eventName);
-        }
-        return eventNames;
-        },
-        new Set()
-    );
-    console.log(eventNames)
-
-    // define the delegating methods
-    for (const eventName of eventNames) {
-      this.machine[eventName] = function (...args: any[]) {
-        const handler = this[this.STATE][eventName];
-        
-        if (typeof handler === 'function') {
-          return this[this.STATE][eventName].apply(this, args);
-        } else {
-          throw `invalid event ${eventName}`;
-        }
+class StateTransition extends StateAction {
+  constructor(stateName: string, fn: Function) {
+    super(
+      function transitionTo(...args: any[]) {
+        const returnValue = fn.apply(this, args);
+        this.setState(stateName);
+        return returnValue;
       }
-
-      console.log(this.machine[eventName].toString())
-    }
-
-    // set the starting state
-    this.machine[this.STATE] = description[this.STATES][description[this.STARTING_STATE]];
-    this.machine[this.STATE].name = description[this.STARTING_STATE];
-
-    // we're done
-  }
-
-  protected transitionsTo (stateName, fn) {
-    return function (...args: any[]) {
-      const returnValue = fn.apply(this, args);
-      this[this.STATE] = this[this.STATES][stateName];
-      this[this.STATE].name = stateName;
-
-      return returnValue;
-    };
-  }
-
-  public getState(): object {
-    return this.machine[this.STATE];
-  }
-
-  public getStateName(): string {
-    return this.getState().name;
+    );
   }
 }
+
+class StateEvent implements IStateNode {
+  
+  public name : string;
+  public action : StateAction;
+
+  constructor(name: string, action: any) {
+    this.name = name;
+
+    if (action instanceof StateAction) {
+      this.action = action;
+    } else {
+      this.action = new StateAction(action);
+    }
+
+  }
+}
+
+class State implements IStateNode {
+  
+  public name : string;
+  public events: StateEvent[] = [];
+
+  constructor(name: string, eventsDescription: object) {
+    this.name = name;
+    for (const [eventName, action] of Object.entries(eventsDescription)) {
+      this.events.push(new StateEvent(eventName, action));
+    }
+  }
+}
+
+class StateMachine {
+
+  static STATE : symbol = Symbol("state");
+  static STATES : symbol = Symbol("states");
+  static STARTING_STATE : symbol = Symbol("starting-state");
+
+  public stateName: string;
+  private states: Map<string, State>;
+
+  constructor(description: any) {
+
+    const RESERVED: symbol[] = [StateMachine.STARTING_STATE, StateMachine.STATES];
+    const propertiesAndMethods = Object.keys(description).filter(property => !RESERVED.includes(property));
+    for (const property of propertiesAndMethods) {
+      this[property] = description[property];
+    }
+
+    this.states = new Map<string, State>();
+    for (const [stateName, events] of Object.entries(description[StateMachine.STATES])) {
+      this.states.set(stateName, new State(stateName, events));
+    }
+
+    this.stateName = description[StateMachine.STARTING_STATE];
+
+    this.setState(this.stateName);
+  }
+
+  getState() {
+    return this.states.get(this.stateName);
+  }
+
+  private setState (stateName: string) : void {
+    const currentState = this.getState();
+    for (const { name } of currentState.events) {
+      if (typeof this.__proto__[name] === 'function') {
+        delete this.__proto__[name];
+      }
+    }
+
+    // Set the new state
+    this.stateName = stateName;
+
+    const state = this.getState();
+    for (var { name, action } of state.events) {
+      this.__proto__[name] = action.method.bind(this);
+    }    
+  }
+}
+
+export { StateMachine };
+export { StateTransition };
