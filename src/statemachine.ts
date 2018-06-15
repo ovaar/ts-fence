@@ -1,4 +1,5 @@
 'use strict';
+import { EventEmitter } from  'events';
 
 interface IStateNode {
   name : string;
@@ -9,6 +10,7 @@ class StateAction {
 }
 
 class StateTransition extends StateAction {
+  public stateName: string;
   constructor(stateName: string, fn: Function) {
     super(
       function transitionTo(...args: any[]) {
@@ -17,6 +19,7 @@ class StateTransition extends StateAction {
         return returnValue;
       }
     );
+    this.stateName = stateName;
   }
 }
 
@@ -41,25 +44,34 @@ class State implements IStateNode {
   
   public name : string;
   public events: StateEvent[] = [];
+  public eventNames: string[] = [];
 
   constructor(name: string, eventsDescription: object) {
     this.name = name;
     for (const [eventName, action] of Object.entries(eventsDescription)) {
+      this.eventNames.push(eventName);
       this.events.push(new StateEvent(eventName, action));
     }
   }
+
+  public getEventNames() : string[] {
+    return this.events.map((event: StateEvent) => event.name);
+  }
 }
 
-class StateMachine {
+class StateMachine extends EventEmitter {
 
   static STATE : symbol = Symbol("state");
   static STATES : symbol = Symbol("states");
   static STARTING_STATE : symbol = Symbol("starting-state");
 
-  public stateName: string;
+  private stateName: string;
   private states: Map<string, State>;
+  
+  [key: string]: any;
 
   constructor(description: any) {
+    super();
 
     const RESERVED: symbol[] = [StateMachine.STARTING_STATE, StateMachine.STATES];
     const propertiesAndMethods = Object.keys(description).filter(property => !RESERVED.includes(property));
@@ -77,8 +89,20 @@ class StateMachine {
     this.setState(this.stateName);
   }
 
-  getState() {
+  public getState() : State {
     return this.states.get(this.stateName);
+  }
+
+  public getStateName() : string {
+    return this.stateName;
+  }
+
+  public getEventNames() : string[] {
+    return this.getState().getEventNames();
+  }
+
+  public getAllStatesNames() : string[] {
+    return [...this.states.keys()];
   }
 
   private setState (stateName: string) : void {
@@ -95,9 +119,10 @@ class StateMachine {
     const state = this.getState();
     for (const { name, action } of state.events) {
       this.__proto__[name] = action.method.bind(this);
-    }    
+    }
+
+    this.emit('transition', this.stateName);
   }
 }
 
-export { StateMachine };
-export { StateTransition };
+export { StateMachine, StateTransition };
