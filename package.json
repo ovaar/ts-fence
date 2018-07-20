@@ -16,6 +16,7 @@
 		"languages": "typescript"
 	},
 	"devDependencies": {
+		"@types/node": "^10.5.2",
 		"@noderize/scripts": "^0.7.0"
 	},
 	"dependencies": {
