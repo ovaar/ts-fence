@@ -59,7 +59,7 @@ class State implements IStateNode {
     }
   }
 
-  public getEventNames(): string[] {
+  public getTriggerNames(): string[] {
     return this.triggers.map((event: StateTrigger) => event.name)
   }
 }
@@ -69,7 +69,7 @@ class StateMachine {
   static STARTING_STATE: string = 'starting-state'
 
   public previousStateName: string | undefined
-  public stateName: string | undefined
+  public stateName: string = ''
   private states: Map<string, State>
 
   [key: string]: any
@@ -93,13 +93,12 @@ class StateMachine {
     this.setState(startingStateName)
   }
 
-  public getState(): State | undefined {
-    return this.stateName === undefined ? undefined : this.states!.get(this.stateName)
+  public getState(): State {
+    return this.states.get(this.stateName)!
   }
 
-  public getEventNames(): string[] {
-    const state = this.getState()
-    return state === undefined ? [] : state!.getEventNames()
+  public getTriggerNames(): string[] {
+    return this.getState()!.getTriggerNames()
   }
 
   public getAllStatesNames(): string[] {
@@ -108,10 +107,11 @@ class StateMachine {
 
   public setState(stateName: string): void {
     const currentState = this.getState()
+    const prototype = Object.getPrototypeOf(this)
     if (currentState) {
       for (const { name } of currentState.triggers) {
-        if (typeof this.__proto__[name] === 'function') {
-          delete this.__proto__[name]
+        if (prototype.hasOwnProperty(name)) {
+          delete prototype[name]
         }
       }
     }
@@ -120,9 +120,9 @@ class StateMachine {
     this.previousStateName = this.stateName
     this.stateName = stateName
 
-    const state = this.getState()!
+    const state = this.getState()
     for (const event of state.triggers) {
-      this.__proto__[event.name] = function(...args: any[]) {
+      prototype[event.name] = function(...args: any[]) {
         event.call(this, ...args)
       }
     }

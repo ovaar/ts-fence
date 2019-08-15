@@ -57,6 +57,51 @@ describe('Testing StateMachine', () => {
   it('should be able to create a new instance of StateMachine successfully', () => {
     const statemachine = new StateMachine(description)
     expect(statemachine).toBeInstanceOf(StateMachine)
+    expect(statemachine.stateName).toBe('open')
+  })
+
+  describe('Testing getAllStatesNames method', () => {
+    it('should be able to get a list of all the state names succesfully', () => {
+      const expected: string[] = ['open', 'held', 'closed']
+
+      const statemachine = new StateMachine(description)
+
+      const states: string[] = statemachine.getAllStatesNames()
+      expect(states).toEqual(expect.arrayContaining(expected))
+    })
+  })
+
+  describe('Testing getTriggerNames method', () => {
+    it('should be able to get a list of all the state trigger names succesfully', () => {
+      const expected: string[] = ['deposit', 'withdraw', 'placeHold', 'close']
+
+      const statemachine = new StateMachine(description)
+
+      const states: string[] = statemachine.getTriggerNames()
+      expect(states).toEqual(expect.arrayContaining(expected))
+    })
+  })
+
+  describe('Testing setState method', () => {
+    it('should remove all triggers from the prototyped scope when changing state', () => {
+      const statemachine = new StateMachine(description)
+      const stateTriggerNames = statemachine.getTriggerNames()
+      const prototype = Object.getPrototypeOf(statemachine)
+      prototype.test1 = 'test1'
+      expect(statemachine).toHaveProperty('close')
+      expect(statemachine).toHaveProperty('test1')
+      statemachine.close()
+      expect(statemachine).not.toHaveProperty('close')
+      expect(statemachine).toHaveProperty('test1')
+    })
+
+    it('should only remove existing triggers from the prototyped scope when changing state', () => {
+      const statemachine = new StateMachine(description)
+      const state = statemachine.getState() as any
+      state.triggers.push({ name: 'test' })
+      expect(statemachine).not.toHaveProperty('test')
+      statemachine.close()
+    })
   })
 
   it('should be able to deposit an amount succesfully', () => {
