@@ -32,8 +32,7 @@ class State {
     constructor(name, triggersDescription) {
         this.triggers = [];
         this.name = name;
-        const triggers = Object.entries(triggersDescription);
-        for (const [triggerName, triggerAction] of triggers) {
+        for (const [triggerName, triggerAction] of Object.entries(triggersDescription)) {
             this.triggers.push(new StateTrigger(triggerName, triggerAction));
         }
     }
@@ -51,8 +50,7 @@ class StateMachine {
             this[property] = description[property];
         }
         this.states = new Map();
-        const _states = Object.entries(description[StateMachine.STATES]);
-        for (const [stateName, triggers] of _states) {
+        for (const [stateName, triggers] of Object.entries(description[StateMachine.STATES])) {
             this.states.set(stateName, new State(stateName, triggers));
         }
         this.setState(startingStateName);
