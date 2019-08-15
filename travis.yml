@@ -11,7 +11,6 @@ node_js:
   - '8'
   - '6'
 script:
-  - npm run test:prod
-  - npm run build
+  - npm run test:coverage
 after_success:
   - 'cat coverage/lcov.info | ./node_modules/.bin/coveralls' # sends the coverage report to coveralls
