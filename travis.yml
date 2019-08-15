@@ -1,0 +1,17 @@
+language: node_js
+cache:
+  directories:
+    - ~/.npm
+notifications:
+  email: false
+node_js:
+  - 'node'
+  - '10'
+  - '11'
+  - '8'
+  - '6'
+script:
+  - npm run test:prod
+  - npm run build
+after_success:
+  - 'cat coverage/lcov.info | ./node_modules/.bin/coveralls' # sends the coverage report to coveralls
