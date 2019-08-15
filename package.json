@@ -1,25 +1,61 @@
 {
-	"name": "node-statemachine",
-	"version": "0.1.0",
-	"private": true,
-	"main": "dist/index.js",
-	"scripts": {
-		"watch": "noderize-scripts watch",
-		"build": "noderize-scripts build",
-		"start": "noderize-scripts start",
-		"format": "noderize-scripts format",
-		"test": "noderize-scripts test",
-		"lint": "noderize-scripts lint",
-		"clean": "noderize-scripts clean"
-	},
-	"noderize": {
-		"languages": "typescript"
-	},
-	"devDependencies": {
-		"@types/node": "^10.5.2",
-		"@noderize/scripts": "^0.7.0"
-	},
-	"dependencies": {
-		"@noderize/runtime": "^0.7.0"
-	}
+  "name": "node-statemachine",
+  "version": "1.0.0",
+  "private": false,
+  "main": "dist/lib/index.js",
+  "scripts": {
+    "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "prebuild": "rimraf dist",
+    "build": "tsc",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "author": {
+    "name": "Thomas Reynders",
+    "url": "https://github.com/hmasr"
+  },
+  "license": "MIT",
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "ts-jest"
+    },
+    "testEnvironment": "node",
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/test/"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
+      }
+    },
+    "collectCoverageFrom": [
+      "src/*.{js,ts}"
+    ]
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.17",
+    "jest": "^24.8.0",
+    "jest-cli": "^24.8.0",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.0.2",
+    "tslint": "^5.18.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {}
 }
