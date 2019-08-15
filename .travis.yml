@@ -2,17 +2,26 @@ language: node_js
 cache:
   directories:
     - ~/.npm
+
 notifications:
   email: false
+
 node_js:
   - 'node'
   - '10'
   - '11'
   - '8'
-script:
-  - npm run test:coverage
-after_success:
-  - npm run travis-deploy-once "npm run report-coverage"
+
+script: echo "Running tests against $(node -v) ..."
+
+jobs:
+  include:
+    - stage: test
+      script: npm run test:coverage
+    - stage: coverage
+      node_js: node
+      script: npm run report-coverage && rm -rf ./coverage
+
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
