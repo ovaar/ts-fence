@@ -8,7 +8,10 @@
     "prebuild": "rimraf dist",
     "build": "tsc",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:prod": "npm run lint && npm run test -- --no-cache",
+    "test:coverage": "jest --coverage",
+    "report-coverage": "cat ./coverage/lcov.info | coveralls",
+    "travis-deploy-once": "travis-deploy-once"
   },
   "author": {
     "name": "Thomas Reynders",
@@ -48,9 +51,11 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.17",
+    "coveralls": "^3.0.6",
     "jest": "^24.8.0",
     "jest-cli": "^24.8.0",
     "prettier": "^1.18.2",
+    "travis-deploy-once": "^5.0.11",
     "ts-jest": "^24.0.2",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",

@@ -12,4 +12,7 @@ node_js:
 script:
   - npm run test:coverage
 after_success:
-  - 'cat coverage/lcov.info | ./node_modules/.bin/coveralls' # sends the coverage report to coveralls
+  - npm run travis-deploy-once "npm run report-coverage"
+branches:
+  except:
+    - /^v\d+\.\d+\.\d+$/
