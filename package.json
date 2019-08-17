@@ -1,9 +1,10 @@
 {
   "name": "ts-fence",
-  "version": "0.1.0",
+  "version": "0.0.0-semantically-released",
   "description": "typescript statemachine",
   "private": false,
   "main": "dist/lib/index.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "prebuild": "rimraf dist",
@@ -14,6 +15,7 @@
     "report-coverage": "cat ./coverage/lcov.info | coveralls",
     "travis-deploy-once": "travis-deploy-once"
   },
+  "repository": "https://github.com/hmasr/ts-fence",
   "author": {
     "name": "Thomas Reynders",
     "url": "https://github.com/hmasr"
