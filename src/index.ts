@@ -35,7 +35,7 @@ class StateTrigger implements IStateNode {
 
   public call(stateMachine: StateMachine, ...args: any[]) {
     let returnValue: any
-    args.unshift({ scope: stateMachine })
+    args.unshift({ scope: stateMachine, stateMachine })
     if (this._action instanceof StateTransition) {
       returnValue = this._action.operation.apply(this, args)
       this._action.transition(stateMachine)
