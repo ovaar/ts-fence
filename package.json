@@ -20,6 +20,14 @@
     "name": "Thomas Reynders",
     "url": "https://github.com/hmasr"
   },
+  "keywords": [
+    "statemachine",
+    "typescript",
+    "finite state machine",
+    "fsm",
+    "state",
+    "workflow"
+  ],
   "license": "MIT",
   "jest": {
     "transform": {
