@@ -104,6 +104,42 @@ describe('Testing StateMachine', () => {
     })
   })
 
+  it('should call the ON_ENTER state method succesfully', () => {
+    const onEnterMockFn = jest.fn()
+    const description: IStateMachineDescription = {
+      [StateMachine.STARTING_STATE]: 'open',
+      [StateMachine.STATES]: {
+        open: {
+          [StateMachine.ON_ENTER]: onEnterMockFn
+        }
+      }
+    }
+    const statemachine = new StateMachine(description)
+
+    expect(statemachine.stateName).toBe('open')
+    expect(onEnterMockFn).toBeCalled()
+  })
+
+  it('should call the ON_EXIT state method succesfully', () => {
+    const onExitMockFn = jest.fn()
+    const description: IStateMachineDescription = {
+      [StateMachine.STARTING_STATE]: 'open',
+      [StateMachine.STATES]: {
+        open: {
+          [StateMachine.ON_EXIT]: onExitMockFn,
+          close: new StateTransition('closed', (): any => undefined)
+        },
+        closed: {}
+      }
+    }
+
+    const statemachine = new StateMachine(description)
+    statemachine.close()
+
+    expect(statemachine.stateName).toBe('closed')
+    expect(onExitMockFn).toBeCalled()
+  })
+
   it('should be able to deposit an amount succesfully', () => {
     const statemachine = new StateMachine(description)
     statemachine.deposit(5)

@@ -61,11 +61,22 @@ class State implements IStateNode {
   public getTriggerNames(): string[] {
     return this.triggers.map((event: StateTrigger) => event.name)
   }
+
+  get onEnter(): StateTrigger | undefined {
+    return this.triggers.find(o => o.name === StateMachine.ON_ENTER)
+  }
+
+  get onExit(): StateTrigger | undefined {
+    return this.triggers.find(o => o.name === StateMachine.ON_EXIT)
+  }
 }
 
 class StateMachine {
   static STATES: string = 'states'
   static STARTING_STATE: string = 'starting-state'
+
+  static ON_EXIT: string = 'on-exit'
+  static ON_ENTER: string = 'on-enter'
 
   public previousStateName: string | undefined
   public stateName: string = ''
@@ -107,6 +118,10 @@ class StateMachine {
     const currentState = this.getState()
     const prototype = Object.getPrototypeOf(this)
     if (currentState) {
+      if (currentState.onExit) {
+        currentState.onExit.call(this)
+      }
+
       for (const { name } of currentState.triggers) {
         if (prototype.hasOwnProperty(name)) {
           delete prototype[name]
@@ -123,6 +138,10 @@ class StateMachine {
       prototype[event.name] = function(...args: any[]) {
         event.call(this, ...args)
       }
+    }
+
+    if (state.onEnter) {
+      state.onEnter.call(this)
     }
   }
 }
