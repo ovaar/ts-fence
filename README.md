@@ -2,6 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/hmasr/ts-fence/badge.svg?branch=master)](https://coveralls.io/github/hmasr/ts-fence?branch=master)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![npm version](https://img.shields.io/npm/v/ts-fence)](https://www.npmjs.com/package/ts-fence 'View this project on npm')
+[![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://paypal.me/ThomasReynders)
 
 > The descriptive statemachine for typescript
 
