@@ -31,6 +31,7 @@ const _description: PlayerStateMachineDescription = {
   [StateMachine.STATES]: {
     // describe states here
     idle: {
+      [StateMachine.ON_ENTER]: () => {},
       // describe state triggers and actions here
       stabbed({ scope, stateMachine }: { scope: PlayerStateMachineDescription, stateMachine: StateMachine }, damage: number) {
         scope.player.health = scope.player.health - damage < 0 ? 0 : scope.player.health - damage;
@@ -40,6 +41,7 @@ const _description: PlayerStateMachineDescription = {
         }
       },
       die: new StateTransition('game-over', (): any => undefined),
+      [StateMachine.ON_EXIT]: () => {},
     },
     'game-over': {
       ...
