@@ -22,10 +22,14 @@ declare class State implements IStateNode {
     triggers: StateTrigger[];
     constructor(name: string, triggersDescription: object);
     getTriggerNames(): string[];
+    readonly onEnter: StateTrigger | undefined;
+    readonly onExit: StateTrigger | undefined;
 }
 declare class StateMachine {
     static STATES: string;
     static STARTING_STATE: string;
+    static ON_EXIT: string;
+    static ON_ENTER: string;
     previousStateName: string | undefined;
     stateName: string;
     private states;

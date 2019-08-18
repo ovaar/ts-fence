@@ -17,7 +17,7 @@ class StateTrigger {
     }
     call(stateMachine, ...args) {
         let returnValue;
-        args.unshift({ scope: stateMachine });
+        args.unshift({ scope: stateMachine, stateMachine });
         if (this._action instanceof StateTransition) {
             returnValue = this._action.operation.apply(this, args);
             this._action.transition(stateMachine);
@@ -38,6 +38,12 @@ class State {
     }
     getTriggerNames() {
         return this.triggers.map((event) => event.name);
+    }
+    get onEnter() {
+        return this.triggers.find(o => o.name === StateMachine.ON_ENTER);
+    }
+    get onExit() {
+        return this.triggers.find(o => o.name === StateMachine.ON_EXIT);
     }
 }
 class StateMachine {
@@ -68,6 +74,9 @@ class StateMachine {
         const currentState = this.getState();
         const prototype = Object.getPrototypeOf(this);
         if (currentState) {
+            if (currentState.onExit) {
+                currentState.onExit.call(this);
+            }
             for (const { name } of currentState.triggers) {
                 if (prototype.hasOwnProperty(name)) {
                     delete prototype[name];
@@ -83,9 +92,14 @@ class StateMachine {
                 event.call(this, ...args);
             };
         }
+        if (state.onEnter) {
+            state.onEnter.call(this);
+        }
     }
 }
 StateMachine.STATES = 'states';
 StateMachine.STARTING_STATE = 'starting-state';
+StateMachine.ON_EXIT = 'on-exit';
+StateMachine.ON_ENTER = 'on-enter';
 exports.StateMachine = StateMachine;
 //# sourceMappingURL=index.js.map

@@ -1,6 +1,6 @@
 {
   "name": "ts-fence",
-  "version": "0.0.0-semantically-released",
+  "version": "1.1.0",
   "description": "typescript statemachine",
   "private": false,
   "main": "dist/lib/index.js",
