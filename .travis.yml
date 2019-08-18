@@ -26,9 +26,9 @@ jobs:
       deploy:
         provider: script
         skip_cleanup: true
-        script:
-          - npm run build
-          - npx semantic-release
+        script: npm run build && npx semantic-release
+        on:
+          branch: master
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
