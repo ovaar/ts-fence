@@ -4,10 +4,10 @@ interface IStateNode {
   name: string
 }
 
-type StateAction = Function | StateTransition
+type TriggerAction = Function | StateTransition
 
 interface IStateMachineDescription {
-  [key: string]: Object | string | StateAction
+  [key: string]: Object | string | TriggerAction
 }
 
 class StateTransition {
@@ -26,9 +26,9 @@ class StateTransition {
 
 class StateTrigger implements IStateNode {
   public name: string
-  private _action: StateAction
+  private _action: TriggerAction
 
-  constructor(name: string, action: StateAction) {
+  constructor(name: string, action: TriggerAction) {
     this.name = name
     this._action = action
   }
@@ -47,14 +47,51 @@ class StateTrigger implements IStateNode {
   }
 }
 
+class StateAction implements IStateNode {
+  public name: string
+  private _action: Function
+
+  constructor(name: string, action: Function) {
+    this.name = name
+    this._action = action
+  }
+
+  public exec(scope: any) {
+    this._action.call(scope)
+  }
+}
+
 class State implements IStateNode {
   public name: string
   public triggers: StateTrigger[] = []
+  private enterAction: StateAction | undefined = undefined
+  private entryActionsMap: Map<string, StateAction> = new Map()
+  private exitAction: StateAction | undefined = undefined
 
   constructor(name: string, triggersDescription: object) {
     this.name = name
     for (const [triggerName, triggerAction] of Object.entries(triggersDescription)) {
-      this.triggers.push(new StateTrigger(triggerName, triggerAction))
+      if (typeof triggerAction === 'undefined') {
+        throw new Error(`StateMachine: undefined reference ${triggerName} for state '${this.name}'`)
+      }
+
+      switch (triggerName) {
+        case StateMachine.ON_ENTER:
+          this.enterAction = new StateAction(triggerName, triggerAction as Function)
+          break
+        case StateMachine.ON_ENTRY_FROM:
+          for (const [stateName, onEntryAction] of Object.entries(triggerAction)) {
+            const onEntryStateAction = new StateAction(triggerName, onEntryAction as Function)
+            this.entryActionsMap.set(stateName, onEntryStateAction)
+          }
+          break
+        case StateMachine.ON_EXIT:
+          this.exitAction = new StateAction(triggerName, triggerAction as Function)
+          break
+        default:
+          this.triggers.push(new StateTrigger(triggerName, triggerAction))
+          break
+      }
     }
   }
 
@@ -62,12 +99,25 @@ class State implements IStateNode {
     return this.triggers.map((event: StateTrigger) => event.name)
   }
 
-  get onEnter(): StateTrigger | undefined {
-    return this.triggers.find(o => o.name === StateMachine.ON_ENTER)
+  onEnter(scope: any): void {
+    if (this.enterAction) {
+      this.enterAction.exec(scope)
+    }
   }
 
-  get onExit(): StateTrigger | undefined {
-    return this.triggers.find(o => o.name === StateMachine.ON_EXIT)
+  onEntryFrom(state: string, scope: any): void {
+    if (!this.entryActionsMap.has(state)) {
+      return
+    }
+
+    const stateAction = this.entryActionsMap.get(state)
+    stateAction!.exec(scope)
+  }
+
+  onExit(scope: any): void {
+    if (this.exitAction) {
+      this.exitAction.exec(scope)
+    }
   }
 }
 
@@ -75,8 +125,9 @@ class StateMachine {
   static STATES: string = 'states'
   static STARTING_STATE: string = 'starting-state'
 
-  static ON_EXIT: string = 'on-exit'
-  static ON_ENTER: string = 'on-enter'
+  static ON_EXIT: string = 'onExit'
+  static ON_ENTER: string = 'onEnter'
+  static ON_ENTRY_FROM: string = 'onEntryFrom'
 
   public previousStateName: string | undefined
   public stateName: string = ''
@@ -95,7 +146,9 @@ class StateMachine {
     }
 
     this.states = new Map<string, State>()
-    for (const [stateName, triggers] of Object.entries(description[StateMachine.STATES])) {
+    for (const [stateName, triggers] of Object.entries(description[
+      StateMachine.STATES
+    ] as Object)) {
       this.states.set(stateName, new State(stateName, triggers as Object))
     }
 
@@ -118,9 +171,7 @@ class StateMachine {
     const currentState = this.getState()
     const prototype = Object.getPrototypeOf(this)
     if (currentState) {
-      if (currentState.onExit) {
-        currentState.onExit.call(this)
-      }
+      currentState.onExit(this)
 
       for (const { name } of currentState.triggers) {
         if (prototype.hasOwnProperty(name)) {
@@ -140,9 +191,8 @@ class StateMachine {
       }
     }
 
-    if (state.onEnter) {
-      state.onEnter.call(this)
-    }
+    state.onEnter(this)
+    state.onEntryFrom(this.previousStateName, this)
   }
 }
 

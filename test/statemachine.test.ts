@@ -120,6 +120,39 @@ describe('Testing StateMachine', () => {
     expect(onEnterMockFn).toBeCalled()
   })
 
+  it('should throw an error if a state method is undefined', () => {
+    const description: IStateMachineDescription = {
+      [StateMachine.STARTING_STATE]: 'open',
+      [StateMachine.STATES]: {
+        open: {
+          [StateMachine.ON_ENTER]: undefined
+        }
+      }
+    }
+
+    expect(() => {
+      const statemachine = new StateMachine(description)
+      statemachine.getState().getTriggerNames()
+    }).toThrowError("StateMachine: undefined reference onEnter for state 'open'")
+  })
+
+  it('should call the last defined ON_ENTER state method if its already defined', () => {
+    const onEnterMockFn1 = jest.fn()
+    const onEnterMockFn2 = jest.fn()
+    const description: IStateMachineDescription = {
+      [StateMachine.STARTING_STATE]: 'open',
+      [StateMachine.STATES]: {
+        open: {
+          [StateMachine.ON_ENTER]: onEnterMockFn1,
+          [StateMachine.ON_ENTER]: onEnterMockFn2
+        }
+      }
+    }
+
+    const statemachine = new StateMachine(description)
+    expect(onEnterMockFn2).toBeCalled()
+  })
+
   it('should call the ON_EXIT state method succesfully', () => {
     const onExitMockFn = jest.fn()
     const description: IStateMachineDescription = {
@@ -138,6 +171,29 @@ describe('Testing StateMachine', () => {
 
     expect(statemachine.stateName).toBe('closed')
     expect(onExitMockFn).toBeCalled()
+  })
+
+  it('should call the ON_ENTRY_FROM method when transitioning from state `open` to `closed` successfully', () => {
+    const onEntryFromMockFn = jest.fn()
+    const description: IStateMachineDescription = {
+      [StateMachine.STARTING_STATE]: 'open',
+      [StateMachine.STATES]: {
+        open: {
+          close: new StateTransition('closed', (): any => undefined)
+        },
+        closed: {
+          [StateMachine.ON_ENTRY_FROM]: {
+            open: onEntryFromMockFn
+          }
+        }
+      }
+    }
+
+    const statemachine = new StateMachine(description)
+    statemachine.close()
+
+    expect(statemachine.stateName).toBe('closed')
+    expect(onEntryFromMockFn).toBeCalled()
   })
 
   it('should be able to deposit an amount succesfully', () => {
