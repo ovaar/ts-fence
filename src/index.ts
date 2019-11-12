@@ -160,7 +160,7 @@ class StateMachine {
   }
 
   public getTriggerNames(): string[] {
-    return this.getState()!.getTriggerNames()
+    return this.getState().getTriggerNames()
   }
 
   public getAllStatesNames(): string[] {
