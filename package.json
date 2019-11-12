@@ -15,10 +15,10 @@
     "report-coverage": "cat ./coverage/lcov.info | coveralls",
     "travis-deploy-once": "travis-deploy-once"
   },
-  "repository": "https://github.com/ovaar/ts-fence",
+  "repository": "https://github.com/hmasr/ts-fence",
   "author": {
     "name": "Thomas Reynders",
-    "url": "https://github.com/ovaar"
+    "url": "https://github.com/hmasr"
   },
   "keywords": [
     "statemachine",
