@@ -1,9 +1,9 @@
 interface IStateNode {
     name: string;
 }
-declare type StateAction = Function | StateTransition;
+declare type TriggerAction = Function | StateTransition;
 interface IStateMachineDescription {
-    [key: string]: Object | string | StateAction;
+    [key: string]: Object | string | TriggerAction;
 }
 declare class StateTransition {
     stateName: string;
@@ -14,22 +14,27 @@ declare class StateTransition {
 declare class StateTrigger implements IStateNode {
     name: string;
     private _action;
-    constructor(name: string, action: StateAction);
+    constructor(name: string, action: TriggerAction);
     call(stateMachine: StateMachine, ...args: any[]): any;
 }
 declare class State implements IStateNode {
     name: string;
     triggers: StateTrigger[];
+    private enterAction;
+    private entryActionsMap;
+    private exitAction;
     constructor(name: string, triggersDescription: object);
     getTriggerNames(): string[];
-    readonly onEnter: StateTrigger | undefined;
-    readonly onExit: StateTrigger | undefined;
+    onEnter(scope: any): void;
+    onEntryFrom(state: string, scope: any): void;
+    onExit(scope: any): void;
 }
 declare class StateMachine {
     static STATES: string;
     static STARTING_STATE: string;
     static ON_EXIT: string;
     static ON_ENTER: string;
+    static ON_ENTRY_FROM: string;
     previousStateName: string | undefined;
     stateName: string;
     private states;

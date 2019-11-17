@@ -28,22 +28,64 @@ class StateTrigger {
         return returnValue;
     }
 }
+class StateAction {
+    constructor(name, action) {
+        this.name = name;
+        this._action = action;
+    }
+    exec(scope) {
+        this._action.call(scope);
+    }
+}
 class State {
     constructor(name, triggersDescription) {
         this.triggers = [];
+        this.enterAction = undefined;
+        this.entryActionsMap = new Map();
+        this.exitAction = undefined;
         this.name = name;
         for (const [triggerName, triggerAction] of Object.entries(triggersDescription)) {
-            this.triggers.push(new StateTrigger(triggerName, triggerAction));
+            if (typeof triggerAction === 'undefined') {
+                throw new Error(`StateMachine: undefined reference ${triggerName} for state '${this.name}'`);
+            }
+            switch (triggerName) {
+                case StateMachine.ON_ENTER:
+                    this.enterAction = new StateAction(triggerName, triggerAction);
+                    break;
+                case StateMachine.ON_ENTRY_FROM:
+                    for (const [stateName, onEntryAction] of Object.entries(triggerAction)) {
+                        const onEntryStateAction = new StateAction(triggerName, onEntryAction);
+                        this.entryActionsMap.set(stateName, onEntryStateAction);
+                    }
+                    break;
+                case StateMachine.ON_EXIT:
+                    this.exitAction = new StateAction(triggerName, triggerAction);
+                    break;
+                default:
+                    this.triggers.push(new StateTrigger(triggerName, triggerAction));
+                    break;
+            }
         }
     }
     getTriggerNames() {
         return this.triggers.map((event) => event.name);
     }
-    get onEnter() {
-        return this.triggers.find(o => o.name === StateMachine.ON_ENTER);
+    onEnter(scope) {
+        if (this.enterAction) {
+            this.enterAction.exec(scope);
+        }
     }
-    get onExit() {
-        return this.triggers.find(o => o.name === StateMachine.ON_EXIT);
+    onEntryFrom(state, scope) {
+        if (!this.entryActionsMap.has(state)) {
+            return;
+        }
+        const stateAction = this.entryActionsMap.get(state);
+        stateAction.exec(scope);
+    }
+    onExit(scope) {
+        if (this.exitAction) {
+            this.exitAction.exec(scope);
+        }
     }
 }
 class StateMachine {
@@ -74,9 +116,7 @@ class StateMachine {
         const currentState = this.getState();
         const prototype = Object.getPrototypeOf(this);
         if (currentState) {
-            if (currentState.onExit) {
-                currentState.onExit.call(this);
-            }
+            currentState.onExit(this);
             for (const { name } of currentState.triggers) {
                 if (prototype.hasOwnProperty(name)) {
                     delete prototype[name];
@@ -92,14 +132,14 @@ class StateMachine {
                 event.call(this, ...args);
             };
         }
-        if (state.onEnter) {
-            state.onEnter.call(this);
-        }
+        state.onEnter(this);
+        state.onEntryFrom(this.previousStateName, this);
     }
 }
+exports.StateMachine = StateMachine;
 StateMachine.STATES = 'states';
 StateMachine.STARTING_STATE = 'starting-state';
-StateMachine.ON_EXIT = 'on-exit';
-StateMachine.ON_ENTER = 'on-enter';
-exports.StateMachine = StateMachine;
+StateMachine.ON_EXIT = 'onExit';
+StateMachine.ON_ENTER = 'onEnter';
+StateMachine.ON_ENTRY_FROM = 'onEntryFrom';
 //# sourceMappingURL=index.js.map
