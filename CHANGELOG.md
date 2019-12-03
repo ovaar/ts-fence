@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/ovaar/ts-fence/compare/v1.2.0...v1.2.1) (2019-12-03)
+
+
+### Bug Fixes
+
+* **StateMachine:** Add callback parameters to StateAction exec ([11b717d](https://github.com/ovaar/ts-fence/commit/11b717d307cead7ce4679e5f64fa1ea3a966be44))
+
 # [1.2.0](https://github.com/ovaar/ts-fence/compare/v1.1.0...v1.2.0) (2019-11-17)
 
 

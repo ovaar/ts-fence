@@ -33,8 +33,8 @@ class StateAction {
         this.name = name;
         this._action = action;
     }
-    exec(scope) {
-        this._action.call(scope);
+    exec(stateMachine) {
+        this._action.call(stateMachine, { scope: stateMachine, stateMachine });
     }
 }
 class State {
