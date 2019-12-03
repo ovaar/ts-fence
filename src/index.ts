@@ -56,8 +56,8 @@ class StateAction implements IStateNode {
     this._action = action
   }
 
-  public exec(scope: any) {
-    this._action.call(scope)
+  public exec(stateMachine: StateMachine) {
+    this._action.call(stateMachine, { scope: stateMachine, stateMachine })
   }
 }
 
@@ -131,7 +131,7 @@ class StateMachine {
 
   public previousStateName: string | undefined
   public stateName: string = ''
-  private states: Map<string, State>
+  private states: Map<string, State>;
 
   [key: string]: any
 
@@ -146,9 +146,9 @@ class StateMachine {
     }
 
     this.states = new Map<string, State>()
-    for (const [stateName, triggers] of Object.entries(description[
-      StateMachine.STATES
-    ] as Object)) {
+    for (const [stateName, triggers] of Object.entries(
+      description[StateMachine.STATES] as Object
+    )) {
       this.states.set(stateName, new State(stateName, triggers as Object))
     }
 
