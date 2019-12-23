@@ -15,36 +15,46 @@ import { StateMachine, StateTransition, IStateMachineDescription } from 'ts-fenc
 
 interface IPlayer {
   health: number
+  animate(name: string): void
+  reset(): void
 }
 
-interface PlayerStateMachineDescription extends IStateMachineDescription {
+interface GameStateMachineDescription extends IStateMachineDescription {
   player: IPlayer
 }
 
 const player: IPlayer = {
-  health: 100
+  health: 100,
+  animate(name: string) {},
+  reset() {}
 }
 
-const _description: PlayerStateMachineDescription = {
+const description: GameStateMachineDescription = {
   player,
   [StateMachine.STARTING_STATE]: 'idle',
   [StateMachine.STATES]: {
     // describe states here
     idle: {
-      [StateMachine.ON_ENTER]: () => {},
       // describe state triggers and actions here
-      stabbed({ scope, stateMachine }: { scope: PlayerStateMachineDescription, stateMachine: StateMachine }, damage: number) {
-        scope.player.health = scope.player.health - damage < 0 ? 0 : scope.player.health - damage;
+      hit(
+        { scope, stateMachine }: { scope: GameStateMachineDescription; stateMachine: StateMachine },
+        damage: number
+      ) {
+        scope.player.health = scope.player.health - damage < 0 ? 0 : scope.player.health - damage
 
         if (scope.player.health === 0) {
           stateMachine.die()
         }
       },
-      die: new StateTransition('game-over', (): any => undefined),
-      [StateMachine.ON_EXIT]: () => {},
+      die: new StateTransition('game-over', (): any => undefined)
     },
     'game-over': {
-      ...
+      [StateMachine.ON_ENTER]: ({ scope }: { scope: GameStateMachineDescription }) => {
+        scope.player.animate('death')
+      },
+      [StateMachine.ON_EXIT]: ({ scope }: { scope: GameStateMachineDescription }) => {
+        scope.player.reset()
+      }
     }
   }
 }
